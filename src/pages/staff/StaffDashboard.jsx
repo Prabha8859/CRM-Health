@@ -1,9 +1,12 @@
 import React from 'react';
 import { Users, UserPlus, CheckCircle2, Briefcase, XCircle, TrendingUp, BarChart3, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
 import StatsCard from '../../components/common/StatCard';
 
 const StaffDashboard = () => {
+  const navigate = useNavigate();
+
   // Placeholder for chart component
   const StaffChart = () => (
     <div className="h-64 flex items-end justify-between gap-2 px-4 bg-slate-50 rounded-lg py-4">
@@ -47,7 +50,10 @@ const StaffDashboard = () => {
         subtitle="A quick snapshot of your entire staff system."
         icon={Users}
         actions={
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#0077B6] text-white rounded-xl hover:bg-[#023e8a] transition-colors shadow-lg shadow-blue-500/30">
+          <button 
+            onClick={() => navigate('/staff/list', { state: { openAddModal: true } })}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0077B6] text-white rounded-xl hover:bg-[#023e8a] transition-colors shadow-lg shadow-blue-500/30"
+          >
             <UserPlus size={18} />
             <span>Add Employee</span>
           </button>

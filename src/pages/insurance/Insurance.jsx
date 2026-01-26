@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
-import { Plus, Shield, Edit, UserPlus, DollarSign, Users, Activity, Clock } from 'lucide-react';
+import { Plus, Shield, Edit, UserPlus, DollarSign, Users, Activity, Clock, TrendingUp, PieChart, BarChart3, CheckCircle2, AlertCircle, Trash2, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
 import StatsCard from '../../components/common/StatCard';
-import Modal from '../../components/common/Modal';
 import InsurancePlansTable from '../../components/insurance/InsurancePlansTable';
-import InsuranceActivitySidebar from '../../components/insurance/InsuranceActivitySidebar';
+import InsuranceModal from '../../components/insurance/InsuranceModal';
+import DeleteConfirmationModal from '../../components/common/DeleteConfirmationModal';
 
 const InsuranceDashboard = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
   // Mock Data
-  const [plans] = useState([
+  const [plans, setPlans] = useState([
     { id: 1, name: 'Gold Health Plan', provider: 'LIC', coverage: '$500,000', duration: '1 Year', status: 'Active', code: 'INS-101', premium: '$250/mo' },
     { id: 2, name: 'Silver Life Cover', provider: 'HDFC', coverage: '$200,000', duration: '2 Years', status: 'Active', code: 'INS-102', premium: '$150/mo' },
     { id: 3, name: 'Basic Medical', provider: 'SBI', coverage: '$100,000', duration: '1 Year', status: 'Inactive', code: 'INS-103', premium: '$80/mo' },
@@ -23,6 +28,19 @@ const InsuranceDashboard = () => {
     { id: 6, name: 'Accident Guard', provider: 'Bajaj Allianz', coverage: '$50,000', duration: '1 Year', status: 'Inactive', code: 'INS-106', premium: '$50/mo' },
     { id: 7, name: 'Child Future Plan', provider: 'LIC', coverage: '$1,500,000', duration: '10 Years', status: 'Active', code: 'INS-107', premium: '$100/mo' },
   ]);
+
+  const handleDeletePlan = (id) => {
+    setPlanToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (planToDelete) {
+      setPlans(plans.filter(plan => plan.id !== planToDelete));
+      setDeleteModalOpen(false);
+      setPlanToDelete(null);
+    }
+  };
 
   // Table Columns
   const columns = [
@@ -62,6 +80,13 @@ const InsuranceDashboard = () => {
       render: (row) => (
         <div className="flex items-center gap-2 justify-end">
           <button 
+            onClick={(e) => { e.stopPropagation(); handleViewPlan(row); }}
+            className="p-2 hover:bg-slate-100 text-slate-500 hover:text-[#0077B6] rounded-lg transition-colors"
+            title="View Details"
+          >
+            <Eye size={18} />
+          </button>
+          <button 
             onClick={(e) => { e.stopPropagation(); handleAssignPlan(row); }}
             className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
             title="Assign Policy"
@@ -73,6 +98,13 @@ const InsuranceDashboard = () => {
             className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
           >
             <Edit size={18} />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleDeletePlan(row.id); }}
+            className="p-2 hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg transition-colors"
+            title="Delete Plan"
+          >
+            <Trash2 size={18} />
           </button>
         </div>
       ),
@@ -86,6 +118,12 @@ const InsuranceDashboard = () => {
     setIsModalOpen(true);
   };
 
+  const handleViewPlan = (plan) => {
+    setModalMode('view');
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
+  };
+
   const handleEditPlan = (plan) => {
     setModalMode('edit');
     setSelectedPlan(plan);
@@ -93,14 +131,58 @@ const InsuranceDashboard = () => {
   };
 
   const handleAssignPlan = (plan) => {
-    setSelectedPlan(plan);
-    setIsAssignModalOpen(true);
+    navigate('/insurance/assign', { state: { plan } });
   };
 
-  const filteredPlans = plans.filter(plan => 
-    plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    plan.provider.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSort = (value) => {
+    if (!value) {
+      setSortConfig({ key: '', direction: '' });
+      return;
+    }
+    const [key, direction] = value.split('-');
+    setSortConfig({ key, direction });
+  };
+
+  const filteredPlans = plans.filter(plan => {
+    const matchesSearch = plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.provider.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || plan.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    
+    const getValue = (item, key) => {
+      let val = item[key];
+      if (typeof val === 'string') {
+        // Remove currency symbols and commas for numbers
+        if (val.includes('$')) {
+          return parseFloat(val.replace(/[^0-9.-]+/g, ''));
+        }
+      }
+      return val;
+    };
+
+    const aVal = getValue(a, sortConfig.key);
+    const bVal = getValue(b, sortConfig.key);
+
+    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSavePlan = (formData) => {
+    if (modalMode === 'add') {
+      const newPlan = {
+        ...formData,
+        id: plans.length + 1,
+        code: `INS-${100 + plans.length + 1}`
+      };
+      setPlans([...plans, newPlan]);
+    } else {
+      setPlans(plans.map(p => p.id === selectedPlan.id ? { ...p, ...formData } : p));
+    }
+    setIsModalOpen(false);
+  };
 
   // Simple SVG Chart Component
   const RevenueChart = () => {
@@ -164,6 +246,36 @@ const InsuranceDashboard = () => {
     </div>
   );
 
+  // Recent Activity Component
+  const RecentActivity = () => {
+    const activities = [
+      { title: 'New Health Policy', desc: 'Comprehensive Care for Patient #402', time: '10 mins ago', icon: UserPlus, color: 'bg-blue-500' },
+      { title: 'Claim Processed', desc: 'Surgery Claim #CLM-882 Approved', time: '45 mins ago', icon: CheckCircle2, color: 'bg-green-500' },
+      { title: 'Premium Adjustment', desc: 'Family Floater Plan rates updated', time: '3 hours ago', icon: Edit, color: 'bg-orange-500' },
+      { title: 'Critical Illness Claim', desc: 'New claim filed for Cardiac Care', time: 'Yesterday', icon: AlertCircle, color: 'bg-red-500' },
+    ];
+
+    return (
+      <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+        {activities.map((item, index) => (
+          <div key={index} className="relative pl-8">
+            <div className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${item.color}`}></div>
+            <div>
+              <p className="text-sm font-bold text-slate-800">{item.title}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+              <p className="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
+                <Clock size={10} /> {item.time}
+              </p>
+            </div>
+          </div>
+        ))}
+        <button className="w-full mt-6 py-2 text-sm text-[#0077B6] font-medium hover:bg-blue-50 rounded-xl transition-colors">
+          View All Activity
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6 bg-slate-50 min-h-screen animate-in fade-in duration-500">
       <PageHeader 
@@ -173,7 +285,7 @@ const InsuranceDashboard = () => {
         actions={
           <div className="flex gap-3">
             <button 
-              onClick={() => setIsAssignModalOpen(true)}
+              onClick={() => navigate('/insurance/assign')}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
             >
               <UserPlus size={18} />
@@ -198,81 +310,87 @@ const InsuranceDashboard = () => {
         <StatsCard label="Renewals Due" value="89" icon={Clock} color="text-purple-500" bg="bg-purple-50" trend="Due Soon" trendUp={true} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Plans Table */}
+      {/* Row 1: Revenue & Policy Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <TrendingUp size={20} className="text-[#0077B6]" />
+            Revenue Growth
+          </h3>
+          <RevenueChart />
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+            <PieChart size={20} className="text-[#0077B6]" />
+            Policy Distribution
+          </h3>
+          <PolicyDistributionChart />
+          <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+            {[
+              { label: 'Health', color: 'bg-[#0077B6]' },
+              { label: 'Family', color: 'bg-[#00B4D8]' },
+              { label: 'Critical', color: 'bg-[#90E0EF]' }
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                <span className="text-xs font-medium text-slate-600">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Claims & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <BarChart3 size={20} className="text-[#0077B6]" />
+            Claims Statistics
+          </h3>
+          <ClaimsOverview />
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Activity size={20} className="text-[#0077B6]" />
+            Recent Activity
+          </h3>
+          <RecentActivity />
+        </div>
+      </div>
+
+      {/* Plans Table Section */}
+      <div className="mt-6">
         <InsurancePlansTable 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
           columns={columns}
           filteredPlans={filteredPlans}
-        />
-        
-        {/* Right Column: Activity Sidebar */}
-        <InsuranceActivitySidebar 
-          RevenueChart={RevenueChart} 
-          PolicyDistributionChart={PolicyDistributionChart}
-          ClaimsOverview={ClaimsOverview}
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal
+      <InsuranceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalMode === 'add' ? 'Create New Plan' : 'Edit Plan'}
-      >
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Plan Name</label>
-            <input type="text" defaultValue={selectedPlan?.name} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6]" placeholder="e.g. Gold Health Plan" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Provider</label>
-              <input type="text" defaultValue={selectedPlan?.provider} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6]" placeholder="e.g. LIC" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Premium</label>
-              <input type="text" defaultValue={selectedPlan?.premium} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6]" placeholder="$0.00" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Coverage Amount</label>
-            <input type="text" defaultValue={selectedPlan?.coverage} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6]" placeholder="$0.00" />
-          </div>
-          <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
-            <button type="submit" className="px-6 py-2 bg-[#0077B6] text-white rounded-lg hover:bg-[#023e8a] transition-colors">Save Plan</button>
-          </div>
-        </form>
-      </Modal>
+        onSave={handleSavePlan}
+        plan={selectedPlan}
+        mode={modalMode}
+      />
 
-      {/* Assign Modal */}
-      <Modal
-        isOpen={isAssignModalOpen}
-        onClose={() => setIsAssignModalOpen(false)}
-        title="Assign Policy to Client"
-      >
-        <div className="space-y-4">
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="text-sm text-blue-600 font-medium">Selected Plan</p>
-            <p className="text-lg font-bold text-blue-900">{selectedPlan?.name}</p>
-            <p className="text-sm text-blue-700">{selectedPlan?.coverage} Coverage</p>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Select Client</label>
-            <select className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6]">
-              <option>Select a client...</option>
-              <option>John Doe</option>
-              <option>Sarah Smith</option>
-            </select>
-          </div>
-          <div className="pt-4 flex justify-end gap-3">
-            <button onClick={() => setIsAssignModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
-            <button onClick={() => setIsAssignModalOpen(false)} className="px-6 py-2 bg-[#0077B6] text-white rounded-lg hover:bg-[#023e8a] transition-colors">Confirm Assignment</button>
-          </div>
-        </div>
-      </Modal>
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Plan"
+        message="Are you sure you want to delete this insurance plan? This action cannot be undone."
+      />
     </div>
   );
 };

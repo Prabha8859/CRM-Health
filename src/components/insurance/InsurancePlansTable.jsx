@@ -2,7 +2,7 @@ import React from 'react';
 import { FileText, Search, Filter, ArrowUpDown } from 'lucide-react';
 import DataTable from '../common/DataTable';
 
-const InsurancePlansTable = ({ searchTerm, setSearchTerm, columns, filteredPlans }) => {
+const InsurancePlansTable = ({ searchTerm, setSearchTerm, statusFilter, setStatusFilter, columns, filteredPlans, sortConfig, onSort }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Header Section with improved typography and spacing */}
@@ -36,14 +36,29 @@ const InsurancePlansTable = ({ searchTerm, setSearchTerm, columns, filteredPlans
           />
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 transition-all text-sm font-medium shadow-sm">
-            <Filter size={16} />
-            <span className="hidden sm:inline">Filter</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 transition-all text-sm font-medium shadow-sm">
-            <ArrowUpDown size={16} />
-            <span className="hidden sm:inline">Sort</span>
-          </button>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 transition-all text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6] appearance-none cursor-pointer"
+          >
+            <option value="All">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          <div className="relative">
+            <select
+              value={sortConfig?.key ? `${sortConfig.key}-${sortConfig.direction}` : ''}
+              onChange={(e) => onSort(e.target.value)}
+              className="appearance-none pl-10 pr-8 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 transition-all text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]/20 focus:border-[#0077B6] cursor-pointer"
+            >
+              <option value="">Sort By</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="premium-asc">Premium (Low-High)</option>
+              <option value="premium-desc">Premium (High-Low)</option>
+            </select>
+            <ArrowUpDown size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 

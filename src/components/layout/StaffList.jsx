@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Search, Filter, UserPlus, Mail, Phone, MoreVertical, Briefcase, CheckCircle2, XCircle } from 'lucide-react';
+import { Users, Search, UserPlus, Mail, Phone, MoreVertical, Briefcase, CheckCircle2, XCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import StatsCard from '../../components/common/StatCard';
 import DataTable from '../../components/common/DataTable';
