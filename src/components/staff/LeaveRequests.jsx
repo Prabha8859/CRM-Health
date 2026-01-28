@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, XCircle, Clock, Search, Filter, MoreVertical } from 'lucide-react';
-import PageHeader from '../../components/common/PageHeader';
-import StatsCard from '../../components/common/StatCard';
-import DataTable from '../../components/common/DataTable';
+import PageHeader from '../common/PageHeader';
+import StatsCard from '../common/StatCard';
+import DataTable from '../common/DataTable';
 
 const LeaveRequests = () => {
   const [searchTerm, setSearchTerm] = useState('');

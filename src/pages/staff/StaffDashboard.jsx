@@ -3,45 +3,14 @@ import { Users, UserPlus, CheckCircle2, Briefcase, XCircle, TrendingUp, BarChart
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
 import StatsCard from '../../components/common/StatCard';
+import StaffChart from '../../components/staff/StaffChart';
+import RecentActivity from '../../components/staff/RecentActivity';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
 
-  // Placeholder for chart component
-  const StaffChart = () => (
-    <div className="h-64 flex items-end justify-between gap-2 px-4 bg-slate-50 rounded-lg py-4">
-      {[35, 45, 30, 60, 75, 50, 65, 80, 70, 90, 85, 100].map((h, i) => (
-        <div key={i} className="w-full bg-blue-100 rounded-t-lg relative group hover:bg-[#0077B6] transition-colors" style={{ height: `${h}%` }}>
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-            {h}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+// Internal components moved to src/components/staff/
 
-  // Placeholder for recent activity
-  const RecentActivity = () => (
-    <div className="space-y-4">
-      {[
-        { user: 'Alice Johnson', action: 'added to Sales department', time: '2h ago' },
-        { user: 'Bob Smith', action: 'role changed to Senior Agent', time: '5h ago' },
-        { user: 'Charlie Brown', action: 'logged in from new device', time: '1d ago' },
-      ].map((item, i) => (
-        <div key={i} className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-            {item.user.charAt(0)}
-          </div>
-          <div>
-            <p className="text-sm text-slate-700">
-              <span className="font-bold">{item.user}</span> {item.action}.
-            </p>
-            <p className="text-xs text-slate-400">{item.time}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <div className="p-6 space-y-6 bg-slate-50 min-h-screen animate-in fade-in duration-500">
@@ -55,7 +24,7 @@ const StaffDashboard = () => {
             className="flex items-center gap-2 px-4 py-2 bg-[#0077B6] text-white rounded-xl hover:bg-[#023e8a] transition-colors shadow-lg shadow-blue-500/30"
           >
             <UserPlus size={18} />
-            <span>Add Employee</span>
+            <span>Add Employee</span>  
           </button>
         }
       />

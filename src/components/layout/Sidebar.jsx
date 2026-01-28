@@ -25,7 +25,9 @@ import {
   RefreshCw,
   AlertCircle,
   Building2,
-  BarChart3
+  BarChart3,
+  UserCog as UserCogIcon,
+  Briefcase
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -81,33 +83,43 @@ const Sidebar = () => {
       ]
     },
     {
-      title: 'Roles & Permissions',
-      icon: Shield, // This seems like a duplicate, consider removing if Staff submenu is preferred
-      path: '/roles',
+      category: 'SETTINGS',
+      title: 'Role & Permission',
+      icon: Shield,
+      path: '/rolepermison',
       gradient: 'from-[#00B4D8] to-[#90E0EF]',
       submenu: [
-        { title: 'Roles List', path: '/roles/list', icon: List },
-        { title: 'Create Role', path: '/roles/create', icon: PlusCircle },
-        { title: 'Permissions', path: '/roles/permissions', icon: Settings }
+        { title: 'Role Dashboard', path: '/rolepermison', icon: LayoutDashboard },
+        { title: 'Roles List', path: '/rolepermison/list', icon: List },
+        { title: 'Create / Edit Role', path: '/rolepermison/create', icon: PlusCircle },
+        { title: 'Permission Matrix', path: '/rolepermison/matrix', icon: Settings },
+        { title: 'Role Assignment', path: '/rolepermison/assign', icon: UserCogIcon }
       ]
     },
     {
+      category: 'ORGANIZATIONAL STRUCTURE',
       title: 'Teams',
       icon: Users,
       path: '/teams',
       gradient: 'from-[#90E0EF] to-[#CAF0F8]',
       submenu: [
-        { title: 'Team List', path: '/teams/list', icon: List },
-        { title: 'Team Details', path: '/teams/details', icon: FileText }
+        { title: 'Teams Dashboard', path: '/teams', icon: LayoutDashboard },
+        { title: 'All Teams', path: '/teams/list', icon: List },
+        { title: 'Create Team', path: '/teams/create', icon: PlusCircle },
+        { title: 'Team Activity', path: '/teams/activity', icon: Activity }
       ]
     },
     {
       title: 'Employees',
-      icon: Stethoscope,
+      icon: Briefcase,
       path: '/employees',
       gradient: 'from-[#CAF0F8] to-[#90E0EF]',
       submenu: [
-        { title: 'Employee List', path: '/employees/list', icon: List }
+        { title: 'Employee Dashboard', path: '/employees', icon: LayoutDashboard },
+        { title: 'All Employees', path: '/employees/list', icon: List },
+        { title: 'Add Employee', path: '/employees/add', icon: PlusCircle },
+        { title: 'Team Assignment', path: '/employees/assignments', icon: Users },
+        { title: 'Employee Activity', path: '/employees/activity', icon: Activity }
       ]
     },
     {
