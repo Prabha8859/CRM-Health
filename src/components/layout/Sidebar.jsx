@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import ConfirmationModal from '../common/ConfirmationModal';
 import { 
   LayoutDashboard, 
   UserCog, 
@@ -27,14 +28,16 @@ import {
   Building2,
   BarChart3,
   UserCog as UserCogIcon,
-  Briefcase
+  Briefcase,
+  Bell
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const toggleSubmenu = (title) => {
     if (isCollapsed) setIsCollapsed(false);
@@ -333,27 +336,55 @@ const Sidebar = () => {
           })}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-white/10 relative z-10">
-          <button className={`
-            w-full flex items-center gap-4 px-4 py-4 rounded-2xl
-            transition-all duration-500 group
-            bg-white/5 hover:bg-gradient-to-r hover:from-red-500/80 hover:to-red-600/80
-            border-2 border-transparent hover:border-red-300/30
-            backdrop-blur-sm hover:scale-[1.02]
-          `}>
-            <div className="p-2.5 rounded-xl bg-white/10 group-hover:bg-white/20 transition-all duration-300 group-hover:scale-110">
-              <LogOut size={20} className="text-[#CAF0F8] group-hover:text-white transition-colors duration-300" strokeWidth={2.5} />
+        {/* User Profile Section */}
+        <div className={`p-3 border-t border-white/10 relative z-10 transition-all duration-500 ${isCollapsed ? 'opacity-0 invisible h-0 p-0' : 'opacity-100'}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://i.pravatar.cc/150?u=admin" 
+                alt="User Avatar" 
+                className="w-10 h-10 rounded-full object-cover border-2 border-blue-300"
+              />
+              <div>
+                <p className="font-bold text-sm text-white">Admin User</p>
+                <p className="text-xs text-blue-200">Super Admin</p>
+              </div>
             </div>
-            <span className={`
-              font-bold text-sm whitespace-nowrap transition-all duration-500
-              ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}
-              text-[#90E0EF] group-hover:text-white
-            `}>
-              Logout
-            </span>
-          </button>
+            <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setIsLogoutModalOpen(true)}
+                  className={`
+                  w-full flex items-center gap-4  p-2 rounded-2xl
+                  transition-all duration-500 group
+                  bg-white/5 hover:bg-gradient-to-r hover:from-red-500/80 hover:to-red-600/80
+                  border-2 border-transparent hover:border-red-300/30
+                  backdrop-blur-sm hover:scale-[1.02]
+                `}>
+                  <div className="p-2.5 rounded-xl bg-white/10 group-hover:bg-white/20 transition-all duration-300 group-hover:scale-110">
+                    <LogOut size={20} className="text-[#CAF0F8] group-hover:text-white transition-colors duration-300" strokeWidth={2.5} />
+                  </div>
+                  <span className={`
+                    font-bold text-sm whitespace-nowrap transition-all duration-500
+                    ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}
+                    text-[#90E0EF] group-hover:text-white
+                  `}>
+                    Logout
+                  </span>
+                </button>
+            </div>
+          </div>
         </div>
+
+        {/* Footer */}
+       
+
+        <ConfirmationModal
+          isOpen={isLogoutModalOpen}
+          onClose={() => setIsLogoutModalOpen(false)}
+          onConfirm={onLogout}
+          title="Confirm Logout"
+          message="Are you sure you want to log out?"
+        />
 
         <style>{`
         .custom-scrollbar::-webkit-scrollbar {
