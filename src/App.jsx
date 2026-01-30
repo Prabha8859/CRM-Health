@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AppRouter from './Router';
-import './App.css';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   // On initial load, check if the user was already authenticated.
@@ -21,7 +21,11 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  return <AppRouter isAuthenticated={isAuthenticated} onLogin={handleLogin} onLogout={handleLogout} />;
+  return (
+    <ThemeProvider>
+      <AppRouter isAuthenticated={isAuthenticated} onLogin={handleLogin} onLogout={handleLogout} />
+    </ThemeProvider>
+  );
 }
 
 export default App;

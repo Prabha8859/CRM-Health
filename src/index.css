@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@theme {
+    --color-brand-primary: #66CCFF;
+    /* Inferred from #66CC1 */
+    --color-brand-secondary: #A7ACEC;
+    --color-brand-light: #ACE7EF;
+    --color-brand-mint: #CEFFF0;
+    /* Inferred from #CEFFFO */
+
+    --color-accent-blue: #66CCFF;
+    --color-accent-purple: #A7ACEC;
+    --color-accent-cyan: #ACE7EF;
+
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, var(--color-brand-light) 0%, var(--color-brand-mint) 100%);
+}
+
+/* ✅ ENABLE DARK MODE */
+@custom-variant dark (&:where(.dark, .dark *));
