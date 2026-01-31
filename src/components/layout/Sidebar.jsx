@@ -1,36 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ConfirmationModal from '../common/ConfirmationModal';
 import {
-  LayoutDashboard,
-  UserCog,
-  Shield,
-  Users,
-  Stethoscope,
-  ShieldCheck,
-  Gift,
-  TestTube,
-  Package,
   ChevronDown,
   ChevronRight,
   Box,
   ChevronLeft,
-  LogOut,
-  ClipboardList,
-  FileText,
-  FilePlus,
-  List,
-  PlusCircle,
-  Settings,
-  Activity,
-  RefreshCw,
-  AlertCircle,
-  Building2,
-  BarChart3,
-  UserCog as UserCogIcon,
-  Briefcase,
-  Bell
+  LogOut
 } from 'lucide-react';
+import { menuItems } from './sidebarMenu';
 
 const Sidebar = ({ onLogout }) => {
   const location = useLocation();
@@ -38,6 +16,10 @@ const Sidebar = ({ onLogout }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // State for hovering in collapsed mode
+  const [hoveredSubmenu, setHoveredSubmenu] = useState(null);
+  const submenuTimeoutRef = useRef(null);
 
   const toggleSubmenu = (title) => {
     if (isCollapsed) setIsCollapsed(false);
@@ -47,124 +29,29 @@ const Sidebar = ({ onLogout }) => {
     }));
   };
 
-  const menuItems = [
-    {
-      category: 'OVERVIEW',
-      title: 'Dashboard',
-      icon: LayoutDashboard,
-      path: '/dashboard',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]'
-    },
-    {
-      category: 'INSURANCE MANAGEMENT',
-      title: 'Insurance',
-      icon: ShieldCheck,
-      path: '/insurance',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Overview', path: '/insurance', icon: LayoutDashboard },
-        { title: 'All Policies', path: '/insurance/list', icon: FileText },
-        { title: 'Assign Policy', path: '/insurance/assign', icon: FilePlus },
-        { title: 'Companies', path: '/insurance/companies', icon: Building2 },
-        { title: 'Claims', path: '/insurance/claims', icon: AlertCircle },
-        { title: 'Renewals', path: '/insurance/renewals', icon: RefreshCw },
-        { title: 'Reports', path: '/insurance/reports', icon: BarChart3 }
-      ]
-    },
-    {
-      category: 'STAFF & ADMINISTRATION',
-      title: 'Staff Management',
-      icon: UserCog,
-      path: '/staff', // Main path for the dashboard
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Dashboard', path: '/staff', icon: LayoutDashboard },
-        { title: 'Staff List', path: '/staff/list', icon: Users },
-        { title: 'Roles & Permissions', path: '/staff/roles', icon: Shield },
-        { title: 'Departments', path: '/staff/departments', icon: Building2 },
-        { title: 'Activity Logs', path: '/staff/logs', icon: Activity },
-      ]
-    },
-    {
-      category: 'SETTINGS',
-      title: 'Role & Permission',
-      icon: Shield,
-      path: '/rolepermison',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Role Dashboard', path: '/rolepermison', icon: LayoutDashboard },
-        { title: 'Roles List', path: '/rolepermison/list', icon: List },
-        { title: 'Create / Edit Role', path: '/rolepermison/create', icon: PlusCircle },
-        { title: 'Permission Matrix', path: '/rolepermison/matrix', icon: Settings },
-        { title: 'Role Assignment', path: '/rolepermison/assign', icon: UserCogIcon }
-      ]
-    },
-    {
-      category: 'ORGANIZATIONAL STRUCTURE',
-      title: 'Teams',
-      icon: Users,
-      path: '/teams',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Teams Dashboard', path: '/teams', icon: LayoutDashboard },
-        { title: 'All Teams', path: '/teams/list', icon: List },
-        { title: 'Create Team', path: '/teams/create', icon: PlusCircle },
-        { title: 'Team Activity', path: '/teams/activity', icon: Activity }
-      ]
-    },
-    {
-      title: 'Employees',
-      icon: Briefcase,
-      path: '/employees',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Employee Dashboard', path: '/employees', icon: LayoutDashboard },
-        { title: 'All Employees', path: '/employees/list', icon: List },
-        { title: 'Add Employee', path: '/employees/add', icon: PlusCircle },
-        { title: 'Team Assignment', path: '/employees/assignments', icon: Users },
-        { title: 'Employee Activity', path: '/employees/activity', icon: Activity }
-      ]
-    },
-    {
-      category: 'HEALTH MANAGEMENT',
-      title: 'Health Tests',
-      icon: TestTube,
-      path: '/health-tests',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Test List', path: '/health-tests/list', icon: List },
-        { title: 'Assign Test', path: '/health-tests/assign', icon: Activity }
-      ]
-    },
-    {
-      title: 'Health Packages',
-      icon: Package,
-      path: '/health-packages',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Package List', path: '/health-packages/list', icon: List },
-        { title: 'Manage Tests', path: '/health-packages/manage', icon: Settings },
-        { title: 'Assign Package', path: '/health-packages/assign', icon: PlusCircle }
-      ]
-    },
-    {
-      title: 'Assignments',
-      icon: ClipboardList,
-      path: '/assignments',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]'
-    },
-    {
-      category: 'PROMOTIONS',
-      title: 'Offers',
-      icon: Gift,
-      path: '/offers',
-      gradient: 'from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)]',
-      submenu: [
-        { title: 'Offers List', path: '/offers/list', icon: List },
-        { title: 'Assigned Offers', path: '/offers/assigned', icon: FileText }
-      ]
-    }
-  ];
+  const handleSubmenuEnter = (item, e) => {
+    if (!isCollapsed || !item.submenu) return;
+
+    if (submenuTimeoutRef.current) clearTimeout(submenuTimeoutRef.current);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredSubmenu({
+      title: item.title,
+      items: item.submenu,
+      top: rect.top,
+      left: rect.right + 10, // 10px gap
+      category: item.category
+    });
+  };
+
+  const handleSubmenuLeave = () => {
+    if (submenuTimeoutRef.current) clearTimeout(submenuTimeoutRef.current);
+    submenuTimeoutRef.current = setTimeout(() => {
+      setHoveredSubmenu(null);
+    }, 300); // Delay to allow moving to the submenu
+  };
+
+
 
   // Automatically expand the menu if the current path is within a submenu
   useEffect(() => {
@@ -173,6 +60,7 @@ const Sidebar = ({ onLogout }) => {
         setExpandedMenus(prev => ({ ...prev, [item.title]: true }));
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   return (
@@ -216,7 +104,12 @@ const Sidebar = ({ onLogout }) => {
           const hasSubmenu = item.submenu && item.submenu.length > 0;
 
           return (
-            <div key={index} className="relative group mb-1">
+            <div
+              key={index}
+              className="relative group mb-1"
+              onMouseEnter={(e) => handleSubmenuEnter(item, e)}
+              onMouseLeave={handleSubmenuLeave}
+            >
               {/* Category Header */}
               {item.category && !isCollapsed && (
                 <div className="px-4 mt-4 mb-2 text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
@@ -281,7 +174,7 @@ const Sidebar = ({ onLogout }) => {
                 )}
               </div>
 
-              {/* Submenu */}
+              {/* Submenu (Accordion) */}
               {hasSubmenu && (
                 <div className={`
                     overflow-hidden transition-all duration-500 ease-in-out
@@ -370,7 +263,7 @@ const Sidebar = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Confirmation Modal - already integrated */}
+      {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
@@ -378,6 +271,47 @@ const Sidebar = ({ onLogout }) => {
         title="Confirm Logout"
         message="Are you sure you want to log out?"
       />
+
+      {/* Fixed Floating Submenu */}
+      {hoveredSubmenu && isCollapsed && (
+        <div
+          style={{
+            top: hoveredSubmenu.top,
+            left: hoveredSubmenu.left,
+          }}
+          className="fixed z-50 w-64 bg-white dark:bg-gray-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-gray-800 p-4 animate-in fade-in zoom-in-95 duration-200"
+          onMouseEnter={() => {
+            if (submenuTimeoutRef.current) clearTimeout(submenuTimeoutRef.current);
+          }}
+          onMouseLeave={() => setHoveredSubmenu(null)}
+        >
+          <div className="mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">
+            {hoveredSubmenu.category && (
+              <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">{hoveredSubmenu.category}</p>
+            )}
+            <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">{hoveredSubmenu.title}</h3>
+          </div>
+          <div className="space-y-1 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+            {hoveredSubmenu.items.map((subItem, index) => (
+              <Link
+                key={index}
+                to={subItem.path}
+                onClick={() => setHoveredSubmenu(null)}
+                className={`
+                   flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                   ${location.pathname === subItem.path
+                    ? 'bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[var(--color-brand-primary)]'
+                  }
+                `}
+              >
+                {subItem.icon && <subItem.icon size={16} strokeWidth={location.pathname === subItem.path ? 2.5 : 2} />}
+                <span>{subItem.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {

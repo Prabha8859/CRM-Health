@@ -4,7 +4,7 @@ import { MainLayout } from './components/layout';
 import { DashboardPage } from './components/dashboard';
 import InsuranceDashboard from './pages/insurance/Insurance';
 import InsuranceList from './components/insurance/InsuranceList';
-import AssignPolicy from './components/insurance/AssignPolicy';
+
 import Claims from './pages/insurance/Claims';
 import Renewals from './pages/insurance/Renewals';
 import InsuranceCompanies from './pages/insurance/InsuranceCompanies';
@@ -15,12 +15,12 @@ import Roles from './pages/staff/Roles';
 import Departments from './pages/staff/Departments';
 import ActivityLogs from './pages/staff/ActivityLogs';
 import { menuItems } from './constants/routes';
-import { 
-  RolePermissionDashboard, 
-  RolesList, 
-  CreateRole, 
-  PermissionMatrix, 
-  AssignRole 
+import {
+    RolePermissionDashboard,
+    RolesList,
+    CreateRole,
+    PermissionMatrix,
+    AssignRole
 } from './pages/rolePermison/index';
 import TeamsDashboard from './pages/teams/TeamsDashboard';
 import TeamsList from './pages/teams/TeamsList';
@@ -62,7 +62,6 @@ const AppRouter = ({ isAuthenticated, onLogin, onLogout }) => {
                                     <Route path="/dashboard" element={<DashboardPage />} />
                                     <Route path="/insurance" element={<InsuranceDashboard />} />
                                     <Route path="/insurance/list" element={<InsuranceList />} />
-                                    <Route path="/insurance/assign" element={<AssignPolicy />} />
                                     <Route path="/insurance/claims" element={<Claims />} />
                                     <Route path="/insurance/renewals" element={<Renewals />} />
                                     <Route path="/insurance/companies" element={<InsuranceCompanies />} />
