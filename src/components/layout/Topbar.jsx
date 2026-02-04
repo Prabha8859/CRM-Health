@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ChevronDown, Search, Bell, Settings } from 'lucide-react';
 import ThemeModal from '../common/ThemeModal';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_LABELS } from '../../utils/rbac';
 
 export const Topbar = () => {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate(); // Add hook
 
   return (
     <>
@@ -13,12 +18,24 @@ export const Topbar = () => {
             {/* Left Section */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300 ring-4 ring-[var(--color-brand-primary)]/10">
                   <LayoutDashboard className="text-white" size={24} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-black text-gray-800 dark:text-white tracking-tight transition-colors">Dashboard</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">CRM Management System</p>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-black text-gray-800 dark:text-white tracking-tight transition-colors">
+                      {user ? ROLE_LABELS[user.role] : 'CRM'} <span className="text-gray-400 font-light">Dashboard</span>
+                    </h1>
+                    {user && (
+                      <span className="px-2 py-0.5 rounded-full bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] text-[10px] font-bold uppercase tracking-wider border border-[var(--color-brand-primary)]/20">
+                        {user.role}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                    System Active &bull; {user?.name ? `Welcome back, ${user.name}` : 'CRM Management'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -50,13 +67,16 @@ export const Topbar = () => {
               </button>
 
               {/* User Profile */}
-              <div className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 cursor-pointer group border border-transparent hover:border-gray-100 dark:hover:border-gray-700">
+              <div 
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 cursor-pointer group border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
+              >
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] flex items-center justify-center font-black text-white shadow-md group-hover:scale-105 transition-transform duration-300">
-                  AS
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'US'}
                 </div>
                 <div className="text-left hidden sm:block">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200 transition-colors">Admin User</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Super Admin</p>
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200 transition-colors">{user?.name || "User"}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{ROLE_LABELS[user?.role] || "Member"}</p>
                 </div>
                 <ChevronDown size={18} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" strokeWidth={2.5} />
               </div>

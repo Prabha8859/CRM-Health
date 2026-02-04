@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Activity, Heart, Stethoscope, Pill, Syringe, TestTube, Shield, Phone, MapPin } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Activity, Heart, Stethoscope, Pill, Syringe, TestTube, Shield, Phone, MapPin, ChevronDown } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { ROLES, ROLE_LABELS } from '../utils/rbac';
 
-function Login({ onLogin }) {
+function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState(ROLES.SUPER_ADMIN); // Default role
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!email || !password) {
       setError('Please enter both email and password.');
       return;
     }
 
+    if (!role) {
+      setError('Please select a role.');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log('Logging in with:', { email, password });
-      setIsLoading(false);
-      onLogin();
+    try {
+      await login(role, email, password);
       navigate('/dashboard');
-    }, 1200);
+    } catch (err) {
+      setError('Login failed. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -163,7 +173,7 @@ function Login({ onLogin }) {
 
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-              <p className="text-gray-500">Please enter your details to sign in.</p>
+              <p className="text-gray-500">Please select your role and sign in.</p>
             </div>
 
             {/* Form Content */}
@@ -177,6 +187,30 @@ function Login({ onLogin }) {
                   <span className="text-sm font-semibold">{error}</span>
                 </div>
               )}
+
+              {/* Role Selection Field */}
+              <div>
+                <label className="block text-gray-700 font-semibold text-sm mb-2">
+                  Select Role
+                </label>
+                <div className="relative">
+                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <div className="relative">
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:bg-white focus:border-[var(--color-brand-primary)] focus:ring-4 focus:ring-[var(--color-brand-primary)]/20 outline-none transition-all shadow-sm appearance-none cursor-pointer"
+                    >
+                      {Object.values(ROLES).map((roleValue) => (
+                        <option key={roleValue} value={roleValue}>
+                          {ROLE_LABELS[roleValue]}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
 
               {/* Email Field */}
               <div>

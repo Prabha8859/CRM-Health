@@ -8,9 +8,11 @@ import {
   ChevronLeft,
   LogOut
 } from 'lucide-react';
-import { menuItems } from './sidebarMenu';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_LABELS } from '../../utils/rbac';
 
-const Sidebar = ({ onLogout }) => {
+const Sidebar = ({ menuItems = [], onLogout }) => {
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -50,8 +52,6 @@ const Sidebar = ({ onLogout }) => {
       setHoveredSubmenu(null);
     }, 300); // Delay to allow moving to the submenu
   };
-
-
 
   // Automatically expand the menu if the current path is within a submenu
   useEffect(() => {
@@ -217,7 +217,7 @@ const Sidebar = ({ onLogout }) => {
           <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative group">
               <img
-                src="https://i.pravatar.cc/150?u=admin"
+                src={user?.avatar || "https://i.pravatar.cc/150?u=user"}
                 alt="User Avatar"
                 className={`
                   rounded-full object-cover border-2 border-[var(--color-brand-secondary)]
@@ -229,8 +229,8 @@ const Sidebar = ({ onLogout }) => {
             </div>
 
             <div className={`transition-all duration-500 overflow-hidden ${isCollapsed ? 'w-0 h-0 opacity-0' : 'w-auto opacity-100'}`}>
-              <p className="font-bold text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">Admin User</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Super Admin</p>
+              <p className="font-bold text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">{user?.name || "User"}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{ROLE_LABELS[user?.role] || "Member"}</p>
             </div>
           </div>
 
@@ -326,6 +326,7 @@ const Sidebar = ({ onLogout }) => {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #cbd5e1;
+          border-radius: 10px;
         }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
           background: #334155;
