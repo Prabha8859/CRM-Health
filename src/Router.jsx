@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import { MainLayout } from './components/layout';
-import { useAuth } from './context/AuthContext';
+import { logout } from './store/loginauth/authSlice';
 import { menuItems as allMenuItems } from './components/layout/sidebarMenu';
-import { filterMenuForRole } from './utils/rbac';
+import { filterMenuForRole, ROLES } from './utils/rbac';
 
 // Pages
 import { DashboardPage } from './components/dashboard';
@@ -38,17 +39,29 @@ import EmployeeActivity from './pages/employees/EmployeeActivity';
 import TeamAssignmentPage from './pages/employees/TeamAssignmentPage';
 import UserProfile from './pages/profile/UserProfile';
 import SystemLogs from './pages/admin/SystemLogs';
-import ProtectedRoute from './components/auth/ProtectedRoute';
 
 import Login from './auth/login';
 
 const AppRouter = () => {
-    const { isAuthenticated, user, logout } = useAuth();
-    
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logout());
+    };
+
     // Filter menu items based on user role
     const filteredMenuItems = useMemo(() => {
         if (!user) return [];
-        return filterMenuForRole(allMenuItems, user.role);
+
+        let role = user.role_name || user.role;
+
+        // Map backend role names (e.g. "Superadmin") to frontend RBAC constants
+        if (role === 'Superadmin') role = ROLES.SUPER_ADMIN;
+        else if (role === 'Admin') role = ROLES.ADMIN;
+        else if (role === 'Staff') role = ROLES.STAFF || 'staff';
+
+        return filterMenuForRole(allMenuItems, role);
     }, [user]);
 
     return (
@@ -71,62 +84,60 @@ const AppRouter = () => {
                     <Route
                         path="/*"
                         element={
-                            <MainLayout menuItems={filteredMenuItems} title="CRM Dashboard" onLogout={logout}>
+                            <MainLayout user={user} menuItems={filteredMenuItems} title="CRM Dashboard" onLogout={handleLogout}>
                                 <div className="h-full">
-                                    <ProtectedRoute>
-                                        <Routes>
-                                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                                            <Route path="/dashboard" element={<DashboardPage />} />
-                                            
-                                            {/* Insurance Routes */}
-                                            <Route path="/insurance" element={<InsuranceDashboard />} />
-                                            <Route path="/insurance/list" element={<InsuranceList />} />
-                                            <Route path="/insurance/claims" element={<Claims />} />
-                                            <Route path="/insurance/renewals" element={<Renewals />} />
-                                            <Route path="/insurance/companies" element={<InsuranceCompanies />} />
-                                            <Route path="/insurance/reports" element={<InsuranceReports />} />
-                                            
-                                            {/* Staff Routes */}
-                                            <Route path="/staff" element={<StaffDashboard />} />
-                                            <Route path="/staff/list" element={<StaffList />} />
-                                            <Route path="/staff/roles" element={<Roles />} />
-                                            <Route path="/staff/departments" element={<Departments />} />
-                                            <Route path="/staff/logs" element={<ActivityLogs />} />
-                                            
-                                            {/* Teams Routes */}
-                                            <Route path="/teams" element={<TeamsDashboard />} />
-                                            <Route path="/teams/list" element={<TeamsList />} />
-                                            <Route path="/teams/create" element={<CreateTeam />} />
-                                            <Route path="/teams/edit/:id" element={<CreateTeam />} />
-                                            <Route path="/teams/details/:id" element={<TeamDetails />} />
-                                            <Route path="/teams/activity" element={<TeamActivity />} />
+                                    <Routes>
+                                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                                        <Route path="/dashboard" element={<DashboardPage />} />
 
-                                            {/* Employee Routes */}
-                                            <Route path="/employees" element={<EmployeeDashboard />} />
-                                            <Route path="/employees/list" element={<EmployeeList />} />
-                                            <Route path="/employees/add" element={<AddEmployee />} />
-                                            <Route path="/employees/details/:id" element={<EmployeeDetails />} />
-                                            <Route path="/employees/activity" element={<EmployeeActivity />} />
-                                            <Route path="/employees/assignments" element={<TeamAssignmentPage />} />
+                                        {/* Insurance Routes */}
+                                        <Route path="/insurance" element={<InsuranceDashboard />} />
+                                        <Route path="/insurance/list" element={<InsuranceList />} />
+                                        <Route path="/insurance/claims" element={<Claims />} />
+                                        <Route path="/insurance/renewals" element={<Renewals />} />
+                                        <Route path="/insurance/companies" element={<InsuranceCompanies />} />
+                                        <Route path="/insurance/reports" element={<InsuranceReports />} />
 
-                                            {/* Role & Permission Routes */}
-                                            <Route path="/rolepermison" element={<RolePermissionDashboard />} />
-                                            <Route path="/rolepermison/list" element={<RolesList />} />
-                                            <Route path="/rolepermison/create" element={<CreateRole />} />
-                                            <Route path="/rolepermison/edit/:id" element={<CreateRole />} />
-                                            <Route path="/rolepermison/matrix" element={<PermissionMatrix />} />
-                                            <Route path="/rolepermison/assign" element={<AssignRole />} />
-                                    
-                                            {/* User Profile */}
-                                            <Route path="/profile" element={<UserProfile />} />
+                                        {/* Staff Routes */}
+                                        <Route path="/staff" element={<StaffDashboard />} />
+                                        <Route path="/staff/list" element={<StaffList />} />
+                                        <Route path="/staff/roles" element={<Roles />} />
+                                        <Route path="/staff/departments" element={<Departments />} />
+                                        <Route path="/staff/logs" element={<ActivityLogs />} />
 
-                                            {/* Admin Routes */}
-                                            <Route path="/staff/logs" element={<SystemLogs />} />
+                                        {/* Teams Routes */}
+                                        <Route path="/teams" element={<TeamsDashboard />} />
+                                        <Route path="/teams/list" element={<TeamsList />} />
+                                        <Route path="/teams/create" element={<CreateTeam />} />
+                                        <Route path="/teams/edit/:id" element={<CreateTeam />} />
+                                        <Route path="/teams/details/:id" element={<TeamDetails />} />
+                                        <Route path="/teams/activity" element={<TeamActivity />} />
 
-                                            {/* Catch-all for authenticated users */}
-                                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                                        </Routes>
-                                    </ProtectedRoute>
+                                        {/* Employee Routes */}
+                                        <Route path="/employees" element={<EmployeeDashboard />} />
+                                        <Route path="/employees/list" element={<EmployeeList />} />
+                                        <Route path="/employees/add" element={<AddEmployee />} />
+                                        <Route path="/employees/details/:id" element={<EmployeeDetails />} />
+                                        <Route path="/employees/activity" element={<EmployeeActivity />} />
+                                        <Route path="/employees/assignments" element={<TeamAssignmentPage />} />
+
+                                        {/* Role & Permission Routes */}
+                                        <Route path="/rolepermison" element={<RolePermissionDashboard />} />
+                                        <Route path="/rolepermison/list" element={<RolesList />} />
+                                        <Route path="/rolepermison/create" element={<CreateRole />} />
+                                        <Route path="/rolepermison/edit/:id" element={<CreateRole />} />
+                                        <Route path="/rolepermison/matrix" element={<PermissionMatrix />} />
+                                        <Route path="/rolepermison/assign" element={<AssignRole />} />
+
+                                        {/* User Profile */}
+                                        <Route path="/profile" element={<UserProfile />} />
+
+                                        {/* Admin Routes */}
+                                        <Route path="/staff/logs" element={<SystemLogs />} />
+
+                                        {/* Catch-all for authenticated users */}
+                                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                                    </Routes>
                                 </div>
                             </MainLayout>
                         }

@@ -8,11 +8,9 @@ import {
   ChevronLeft,
   LogOut
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 import { ROLE_LABELS } from '../../utils/rbac';
 
-const Sidebar = ({ menuItems = [], onLogout }) => {
-  const { user } = useAuth();
+const Sidebar = ({ menuItems = [], onLogout, user }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -217,7 +215,7 @@ const Sidebar = ({ menuItems = [], onLogout }) => {
           <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative group">
               <img
-                src={user?.avatar || "https://i.pravatar.cc/150?u=user"}
+                src={user?.profile_image || "https://i.pravatar.cc/150?u=user"}
                 alt="User Avatar"
                 className={`
                   rounded-full object-cover border-2 border-[var(--color-brand-secondary)]
@@ -229,8 +227,8 @@ const Sidebar = ({ menuItems = [], onLogout }) => {
             </div>
 
             <div className={`transition-all duration-500 overflow-hidden ${isCollapsed ? 'w-0 h-0 opacity-0' : 'w-auto opacity-100'}`}>
-              <p className="font-bold text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">{user?.name || "User"}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{ROLE_LABELS[user?.role] || "Member"}</p>
+              <p className="font-bold text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">{user?.username || "User"}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{user?.role_name || ROLE_LABELS[user?.role] || "Member"}</p>
             </div>
           </div>
 

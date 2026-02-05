@@ -14,29 +14,28 @@ const EmployeeActivity = () => {
     { id: 4, employee: 'System', action: 'Automated payroll processed', time: '2 days ago', type: 'info' },
   ];
 
-  const filteredActivities = activities.filter(act => 
+  const filteredActivities = activities.filter(act =>
     act.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
     act.action.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns = [
-    { 
-        header: 'Employee / User', 
-        accessor: 'employee', 
-        render: (row) => (
-            <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${
-                    row.type === 'success' ? 'bg-green-500' :
-                    row.type === 'warning' ? 'bg-orange-500' :
-                    'bg-blue-500'
-                }`} />
-                <span className="font-bold text-slate-700">{row.employee}</span>
-            </div>
-        )
+    {
+      header: 'Employee / User',
+      accessor: 'employee',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${row.type === 'success' ? 'bg-green-500' :
+              row.type === 'warning' ? 'bg-orange-500' :
+                'bg-blue-500'
+            }`} />
+          <span className="font-bold text-slate-700">{row.employee}</span>
+        </div>
+      )
     },
     { header: 'Action', accessor: 'action', className: 'text-slate-600 font-medium' },
-    { 
-      header: 'Timestamp', 
+    {
+      header: 'Timestamp',
       accessor: 'time',
       render: (row) => (
         <div className="flex items-center gap-1 text-slate-400 text-xs font-medium bg-slate-50 px-2 py-1 rounded-lg w-fit">
@@ -53,10 +52,10 @@ const EmployeeActivity = () => {
         subtitle="Audit log of employee changes and updates."
         icon={Activity}
         actions={
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-medium shadow-sm">
-                <Download size={18} />
-                <span>Export Log</span>
-            </button>
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-medium shadow-sm">
+            <Download size={18} />
+            <span>Export Log</span>
+          </button>
         }
       />
 
@@ -72,21 +71,21 @@ const EmployeeActivity = () => {
             <Clock size={20} className="text-blue-600" />
             Activity Log
           </h3>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search logs..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-full sm:w-64"
-                />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search logs..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-full sm:w-64"
+              />
             </div>
             <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors font-medium">
-                <Filter size={18} />
-                <span>Filter</span>
+              <Filter size={18} />
+              <span>Filter</span>
             </button>
           </div>
         </div>

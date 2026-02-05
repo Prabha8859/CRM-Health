@@ -1,46 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff, Activity, Heart, Stethoscope, Pill, Syringe, TestTube, Shield, Phone, MapPin, ChevronDown } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { ROLES, ROLE_LABELS } from '../utils/rbac';
+import { loginUser, clearError } from '../store/loginauth/authSlice';
 
 function Login() {
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const { isLoading, error: reduxError } = useSelector((state) => state.auth);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(ROLES.SUPER_ADMIN); // Default role
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
   const navigate = useNavigate();
+
+  // Auto-fill credentials based on role selection
+  useEffect(() => {
+    if (role === ROLES.SUPER_ADMIN) {
+      setEmail('superadmin@crm.com');
+      setPassword('111111');
+    } else if (role === ROLES.ADMIN) {
+      setEmail('admin@crm.com');
+      setPassword('111111');
+    } else {
+      setEmail('');
+      setPassword('');
+    }
+    // Clear errors when switching roles
+    setLocalError('');
+    dispatch(clearError());
+  }, [role, dispatch]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      setLocalError('Please enter both email and password.');
       return;
     }
 
     if (!role) {
-      setError('Please select a role.');
+      setLocalError('Please select a role.');
       return;
     }
 
-    setError('');
-    setIsLoading(true);
+    setLocalError('');
 
-    try {
-      await login(role, email, password);
+    const resultAction = await dispatch(loginUser({ email, password }));
+
+    // Debugging: Check the result in your browser console (F12)
+    console.log('Login Result:', resultAction);
+
+    if (loginUser.fulfilled.match(resultAction)) {
       navigate('/dashboard');
-    } catch (err) {
-      setError('Login failed. Please try again.');
-      setIsLoading(false);
     }
   };
 
+  // Combine local validation errors with Redux API errors
+  const displayError = localError || reduxError;
+
   return (
     <div className="flex min-h-screen bg-[linear-gradient(135deg,var(--color-brand-light)_0%,var(--color-brand-mint)_100%)] items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row h-auto min-h-[600px]">
+      <div className="w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row h-auto min-h-[600px]">
         {/* Left Side - Healthcare Visual with Floating Elements */}
         <div className="hidden lg:flex lg:w-[55%] relative bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] items-center justify-center overflow-hidden p-2">
           {/* Decorative Circles Background */}
@@ -153,16 +175,16 @@ function Login() {
         </div>
 
         {/* Right Side - Login Form with Glassmorphism */}
-        <div className="flex w-full lg:w-[45%] items-center justify-center p-2 relative bg-white/70 backdrop-blur-2xl">
+        <div className="flex w-full lg:w-[45%] items-center justify-center py-2 relative bg-white/70 backdrop-blur-2xl">
           {/* Background Decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--color-brand-primary)]/10 rounded-full blur-3xl -z-10"></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-[var(--color-brand-secondary)]/10 rounded-full blur-3xl -z-10"></div>
           </div>
 
-          <div className="w-full max-w-md relative z-10 px-6">
+          <div className="w-full max-w-md relative z-10 p-1">
             {/* Mobile Logo */}
-            <div className="lg:hidden mb-8 text-center">
+            <div className="lg:hidden mb-2 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] rounded-2xl mb-4 shadow-xl">
                 <Activity className="w-9 h-9 text-white" strokeWidth={2.5} />
               </div>
@@ -171,20 +193,20 @@ function Login() {
               </h1>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-2">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
               <p className="text-gray-500">Please select your role and sign in.</p>
             </div>
 
             {/* Form Content */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-3 p-4">
               {/* Error Message */}
-              {error && (
+              {displayError && (
                 <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 animate-shake">
                   <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">!</span>
                   </div>
-                  <span className="text-sm font-semibold">{error}</span>
+                  <span className="text-sm font-semibold">{displayError}</span>
                 </div>
               )}
 
@@ -273,7 +295,7 @@ function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-6 bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full mt-2 bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-secondary)] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-3">
@@ -298,7 +320,7 @@ function Login() {
             </form>
 
             {/* Social Icons & Contact Info */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className=" pt-4 border-t border-gray-100">
               {/* Social Icons */}
               <div className="flex items-center justify-center gap-4 mb-6">
                 <a href="#" className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-[var(--color-brand-primary)] hover:text-white transition-all shadow-sm hover:shadow-md text-gray-500 border border-gray-100">

@@ -1,7 +1,32 @@
 import React, { useState } from 'react';
 
-const PolicyClaimsChart = () => {
+const PolicyClaimsChart = ({ variant = 'primary' }) => {
     const [timeframe, setTimeframe] = useState('Weekly');
+
+    const variants = {
+        primary: {
+            bar1: 'bg-blue-600 dark:bg-blue-500',
+            bar2: 'bg-purple-500 dark:bg-purple-400'
+        },
+        success: {
+            bar1: 'bg-emerald-600 dark:bg-emerald-500',
+            bar2: 'bg-teal-500 dark:bg-teal-400'
+        },
+        warning: {
+            bar1: 'bg-amber-500 dark:bg-amber-400',
+            bar2: 'bg-orange-500 dark:bg-orange-400'
+        },
+        danger: {
+            bar1: 'bg-red-600 dark:bg-red-500',
+            bar2: 'bg-rose-500 dark:bg-rose-400'
+        },
+        default: {
+            bar1: 'bg-slate-700 dark:bg-slate-600',
+            bar2: 'bg-slate-400 dark:bg-slate-500'
+        }
+    };
+
+    const colors = variants[variant] || variants.primary;
 
     const data = [
         { date: '3 Feb', earnings: 45, investment: 30 },
@@ -24,11 +49,11 @@ const PolicyClaimsChart = () => {
                     <h3 className="text-xl font-bold text-slate-800 dark:text-gray-100">Policy & Claims</h3>
                     <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-indigo-700"></span>
+                            <span className={`w-2.5 h-2.5 rounded-full ${colors.bar1}`}></span>
                             <span className="text-sm font-bold text-slate-600 dark:text-gray-400">Earnings</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
+                            <span className={`w-2.5 h-2.5 rounded-full ${colors.bar2}`}></span>
                             <span className="text-sm font-bold text-slate-600 dark:text-gray-400">Investment</span>
                         </div>
                     </div>
@@ -41,8 +66,8 @@ const PolicyClaimsChart = () => {
                             key={tf}
                             onClick={() => setTimeframe(tf)}
                             className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${timeframe === tf
-                                    ? 'bg-white shadow-sm text-slate-800 border border-slate-100 dark:bg-gray-800 dark:text-white dark:border-gray-700'
-                                    : 'text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300'
+                                ? 'bg-white shadow-sm text-slate-800 border border-slate-100 dark:bg-gray-800 dark:text-white dark:border-gray-700'
+                                : 'text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300'
                                 }`}
                         >
                             {tf}
@@ -76,14 +101,14 @@ const PolicyClaimsChart = () => {
                                 )}
 
                                 <div className="flex items-end gap-1 md:gap-3 h-48 md:h-56">
-                                    {/* Earnings Bar (Purple) */}
+                                    {/* Earnings Bar */}
                                     <div
-                                        className="w-3 md:w-5 bg-indigo-700 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                                        className={`w-3 md:w-5 ${colors.bar1} rounded-t-lg transition-all duration-500 hover:opacity-80`}
                                         style={{ height: `${heightEarnings}%` }}
                                     ></div>
-                                    {/* Investment Bar (Orange) */}
+                                    {/* Investment Bar */}
                                     <div
-                                        className="w-3 md:w-5 bg-orange-400 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                                        className={`w-3 md:w-5 ${colors.bar2} rounded-t-lg transition-all duration-500 hover:opacity-80`}
                                         style={{ height: `${heightInvestment}%` }}
                                     ></div>
                                 </div>
