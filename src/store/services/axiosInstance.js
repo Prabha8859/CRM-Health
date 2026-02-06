@@ -9,5 +9,17 @@ const axiosInstance = axios.create({
     },
 });
 
-// ... rest of your interceptors
+// Add a request interceptor to automatically add the token to headers.
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // The backend expects a "Bearer" token
+            config.headers.authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 export default axiosInstance;
