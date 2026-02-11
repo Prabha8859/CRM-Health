@@ -1,24 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Filter, Edit3, Trash2, 
-  Users, Shield, X, MoreHorizontal, CheckCircle2, AlertCircle 
+  Users, Shield, Loader2, CheckCircle2, AlertCircle 
 } from 'lucide-react';
 import RoleForm from '../../components/rolepermison/RoleForm';
+import { getAllRoles, createRole, updateRole, deleteRole } from '../staff/rolesApi'; // Named exports
+import Modal from '../../components/common/Modal'; // Reusable Modal
+import DeleteConfirmationModal from '../../components/common/DeleteConfirmationModal'; // Reusable Delete Modal
 
 const RolesList = () => {
-  // Mock Data
-  const [roles, setRoles] = useState([
-    { id: 1, name: 'Super Admin', description: 'Full access to all system features, settings, and user management.', status: 'Active', users: 2 },
-    { id: 2, name: 'Sales Manager', description: 'Can manage sales team, view reports, and edit leads.', status: 'Active', users: 8 },
-    { id: 3, name: 'Support Staff', description: 'Access to ticketing system and customer database only.', status: 'Active', users: 15 },
-    { id: 4, name: 'Intern', description: 'Read-only access to basic modules for training purposes.', status: 'Disabled', users: 0 },
-    { id: 5, name: 'Finance Officer', description: 'Manage invoices, payments, and financial reporting.', status: 'Active', users: 4 },
-  ]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete modal
+  const [roleToDelete, setRoleToDelete] = useState(null); // Role selected for deletion
+  
   const [editingRole, setEditingRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = async () => {
+    try {
+      setLoading(true);
+      console.log('RolesList: Fetching roles...');
+      const data = await getAllRoles(); // Use named export
+      console.log('RolesList: Received roles:', data);
+      
+      const mappedRoles = data.map(role => ({
+        ...role,
+        description: role.description || 'No description available',
+        status: role.status || 'Active',
+        users: role.users || 0
+      }));
+      
+      setRoles(mappedRoles);
+      setError(null);
+    } catch (err) {
+      console.error('RolesList: Error fetching roles', err);
+      setError('Failed to load roles. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handlers
   const handleCreateClick = () => {
@@ -31,30 +61,67 @@ const RolesList = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = (id) => {
-    if (window.confirm('Are you sure you want to delete this role?')) {
-      setRoles(roles.filter(r => r.id !== id));
+  const handleDeleteClick = (role) => {
+    setRoleToDelete(role);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!roleToDelete) return;
+    
+    try {
+      console.log('RolesList: Deleting role', roleToDelete.id);
+      await deleteRole(roleToDelete.id); // Use named export
+      setRoles(roles.filter(r => r.id !== roleToDelete.id));
+      console.log('RolesList: Role deleted successfully');
+      setIsDeleteModalOpen(false);
+      setRoleToDelete(null);
+    } catch (err) {
+      console.error('RolesList: Error deleting role', err);
+      alert('Failed to delete role');
     }
   };
 
-  const handleSaveRole = (formData) => {
-    if (editingRole) {
-      // Update existing
-      setRoles(roles.map(r => r.id === editingRole.id ? { ...r, ...formData } : r));
-    } else {
-      // Create new
-      setRoles([...roles, { ...formData, id: Date.now(), users: 0 }]);
+  const handleSaveRole = async (formData) => {
+    try {
+      setActionLoading(true);
+      console.log('RolesList: Saving role', formData);
+      
+      if (editingRole) {
+        // Update existing
+        const updatedRole = await updateRole(editingRole.id, { name: formData.name }); // Use named export
+        console.log('RolesList: Role updated', updatedRole);
+        fetchRoles(); 
+      } else {
+        // Create new
+        const newRole = await createRole({ name: formData.name }); // Use named export
+        console.log('RolesList: Role created', newRole);
+        fetchRoles();
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('RolesList: Error saving role', err);
+      alert('Failed to save role: ' + (err.message || 'Unknown error'));
+    } finally {
+      setActionLoading(false);
     }
-    setIsModalOpen(false);
   };
 
   // Filtering
   const filteredRoles = roles.filter(role => {
-    const matchesSearch = role.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          role.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = role.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          role.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'All' || role.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  if (loading && roles.length === 0) {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+    );
+  }
 
   return (
     <div className="p-6 min-h-screen bg-slate-50 font-sans text-slate-800 animate-in fade-in duration-500">
@@ -76,6 +143,13 @@ const RolesList = () => {
           Create New Role
         </button>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-2">
+            <AlertCircle size={20} />
+            {error}
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -113,7 +187,7 @@ const RolesList = () => {
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold shadow-sm ${role.status === 'Active' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
-                  {role.name.charAt(0)}
+                  {role.name ? role.name.charAt(0) : '?'}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">{role.name}</h3>
@@ -132,7 +206,7 @@ const RolesList = () => {
                   <Edit3 size={18} />
                 </button>
                 <button 
-                  onClick={() => handleDeleteClick(role.id)}
+                  onClick={() => handleDeleteClick(role)}
                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                   title="Delete Role"
                 >
@@ -172,33 +246,37 @@ const RolesList = () => {
         </button>
       </div>
 
-      {/* Modal Popup */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                {editingRole ? <Edit3 size={20} className="text-blue-600" /> : <Plus size={20} className="text-blue-600" />}
-                {editingRole ? 'Edit Role' : 'Create New Role'}
-              </h2>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
+      {/* Main Create/Edit Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingRole ? 'Edit Role' : 'Create New Role'}
+        maxWidth="max-w-lg"
+      >
+        {actionLoading ? (
+            <div className="flex justify-center p-8">
+                <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
-            
-            <div className="p-6 max-h-[80vh] overflow-y-auto">
-              <RoleForm 
+        ) : (
+            <RoleForm 
                 initialData={editingRole} 
                 onSave={handleSaveRole} 
                 onCancel={() => setIsModalOpen(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+            />
+        )}
+      </Modal>
+
+      {/* Reusable Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+            setIsDeleteModalOpen(false);
+            setRoleToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete Role"
+        message={`Are you sure you want to delete the "${roleToDelete?.name}" role? This action cannot be undone.`}
+      />
     </div>
   );
 };

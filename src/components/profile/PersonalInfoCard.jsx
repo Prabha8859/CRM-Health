@@ -14,11 +14,59 @@ const InfoRow = ({ icon: Icon, label, value }) => (
 );
 
 const PersonalInfoCard = ({ user }) => {
+<<<<<<< HEAD
   const joinDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   }) : 'N/A';
+=======
+  // Standard logic: Configuration for profile details
+  const details = [
+    {
+      icon: Mail,
+      label: "Email Address",
+      value: user?.email || "N/A",
+      color: "text-blue-600",
+      bg: "bg-blue-100"
+    },
+    {
+      icon: Phone,
+      label: "Phone Number",
+      value: user?.phone || "N/A",
+      color: "text-green-600",
+      bg: "bg-green-100"
+    },
+    {
+      icon: MapPin,
+      label: "Location",
+      value: user?.location || "N/A",
+      color: "text-orange-600",
+      bg: "bg-orange-100"
+    },
+    {
+      icon: Calendar,
+      label: "Joining Date",
+      value: user?.joiningDate || "N/A",
+      color: "text-purple-600",
+      bg: "bg-purple-100"
+    },
+    {
+      icon: CreditCard,
+      label: "Employee ID",
+      value: user?.employeeId || "N/A",
+      color: "text-pink-600",
+      bg: "bg-pink-100"
+    },
+    {
+      icon: ShieldCheck,
+      label: "Clearance Level",
+      value: user?.clearanceLevel || "N/A",
+      color: "text-indigo-600",
+      bg: "bg-indigo-100"
+    }
+  ];
+>>>>>>> 2dfbe76 (role base)
 
   return (
     <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
