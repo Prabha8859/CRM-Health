@@ -12,7 +12,6 @@ import Toast from '../../components/common/Toast';
 import { getStaffProfile, updateStaffProfile, registerStaff } from './AllprofileApi';
 
 const UserProfile = () => {
-<<<<<<< HEAD
   const { user } = useSelector((state) => state.auth);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,37 +71,6 @@ const UserProfile = () => {
 
   if (error || !profile) {
     return <div className="flex items-center justify-center h-screen text-red-500">{error || 'Could not load profile.'}</div>;
-=======
-  const { user } = useAuth();
-  const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN;
-  const [profileData, setProfileData] = React.useState(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  React.useEffect(() => {
-      const loadProfile = async () => {
-          setIsLoading(true);
-          try {
-              // Import dynamically or at top lvl
-              const { profileService } = await import('../../services/profileService');
-              const data = await profileService.fetchProfile(user?.id);
-              setProfileData({ ...user, ...data });
-          } catch (error) {
-              console.error("Failed to load profile", error);
-              // Fallback to basic user info
-              setProfileData(user);
-          } finally {
-              setIsLoading(false);
-          }
-      };
-      
-      if (user) {
-          loadProfile();
-      }
-  }, [user]);
-
-  if (isLoading) {
-      return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
->>>>>>> 2dfbe76 (role base)
   }
 
   return (
@@ -121,11 +89,7 @@ const UserProfile = () => {
 
           {/* Left Column: Personal Info */}
           <div className="space-y-6 lg:col-span-1">
-<<<<<<< HEAD
             <PersonalInfoCard user={profile} />
-=======
-             <PersonalInfoCard user={profileData} />
->>>>>>> 2dfbe76 (role base)
           </div>
 
           {/* Right Column: Work & Activity */}
